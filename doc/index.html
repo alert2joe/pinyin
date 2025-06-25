@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漢語聲母拼音遊戲</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #fdf4ff 0%, #fce7f3 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+            color: #374151;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .game-wrapper {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        /* 標題樣式 */
+        .title-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .main-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .title-icon {
+            color: #7c3aed;
+            margin-right: 0.5rem;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        /* 遊戲區域 */
+        .game-area {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* 統計區域 */
+        .stats-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .score-display {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .score-number {
+            color: #7c3aed;
+        }
+
+        .accuracy-display {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .high-score {
+            color: #ea580c;
+        }
+
+        /* 揚聲器區域 */
+        .speaker-area {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .speaker-btn {
+            background: #7c3aed;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            padding: 2rem;
+            font-size: 4rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            animation: none;
+        }
+
+        .speaker-btn:hover {
+            background: #6d28d9;
+            transform: translateY(-2px);
+        }
+
+        .speaker-btn.playing {
+            animation: pulse 1s infinite;
+        }
+
+        .speaker-instruction {
+            margin-top: 1rem;
+            color: #6b7280;
+        }
+
+        .current-sound {
+            margin-top: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: bold;
+            color: #7c3aed;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .current-sound.show {
+            opacity: 1;
+        }
+
+        /* 控制按鈕樣式 */
+        .control-buttons {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .control-btn {
+            background: #f3f4f6;
+            color: #374151;
+            border: 2px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .control-btn:hover {
+            background: #e5e7eb;
+            border-color: #9ca3af;
+            transform: translateY(-1px);
+        }
+
+        .next-btn {
+            background: #dcfce7;
+            border-color: #10b981;
+            color: #047857;
+        }
+
+        .next-btn:hover {
+            background: #bbf7d0;
+            border-color: #059669;
+        }
+
+        /* 聲母按鈕網格 */
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .initial-btn {
+            background: #f3f4f6;
+            color: #1f2937;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .initial-btn:hover {
+            background: #e5e7eb;
+            transform: translateY(-1px);
+        }
+
+        /* 遊戲說明 */
+        .instructions {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+        }
+
+        .instructions h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #1f2937;
+        }
+
+        .instructions ul {
+            list-style: none;
+            color: #6b7280;
+        }
+
+        .instructions li {
+            margin-bottom: 0.5rem;
+        }
+
+        .instructions .fa {
+            width: 1.5rem;
+            margin-right: 0.5rem;
+        }
+
+        .fa-play { color: #10b981; }
+        .fa-mouse-pointer { color: #3b82f6; }
+        .fa-plus { color: #10b981; }
+        .fa-minus { color: #ef4444; }
+        .fa-redo { color: #3b82f6; }
+        .fa-arrow-right { color: #10b981; }
+
+        /* 反饋提示 */
+        .feedback {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 50;
+        }
+
+        .feedback.success { background: #10b981; }
+        .feedback.error { background: #ef4444; }
+        .feedback.warning { background: #f59e0b; }
+        .feedback.show { opacity: 1; }
+
+        /* 動畫效果 */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .correct-animation {
+            animation: correct 0.6s ease-in-out;
+        }
+
+        .wrong-animation {
+            animation: wrong 0.6s ease-in-out;
+        }
+
+        @keyframes correct {
+            0% { background-color: rgb(34, 197, 94); transform: scale(1); }
+            50% { background-color: rgb(22, 163, 74); transform: scale(1.1); }
+            100% { background-color: rgb(34, 197, 94); transform: scale(1); }
+        }
+
+        @keyframes wrong {
+            0% { background-color: rgb(239, 68, 68); transform: scale(1); }
+            25% { background-color: rgb(220, 38, 38); transform: translateX(-5px); }
+            75% { background-color: rgb(220, 38, 38); transform: translateX(5px); }
+            100% { background-color: rgb(239, 68, 68); transform: scale(1); }
+        }
+
+        /* 響應式設計 */
+        @media (min-width: 640px) {
+            .buttons-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            
+            .stats-area {
+                flex-wrap: nowrap;
+            }
+
+            .main-title {
+                font-size: 3rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .buttons-grid {
+                grid-template-columns: repeat(8, 1fr);
+            }
+
+            .container {
+                padding: 2rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .main-title {
+                font-size: 2rem;
+            }
+
+            .speaker-btn {
+                padding: 1.5rem;
+                font-size: 3rem;
+            }
+
+            .stats-area {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .control-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-wrapper">
+            <!-- 遊戲標題 -->
+            <div class="title-section">
+                <h1 class="main-title">
+                    <i class="fas fa-volume-up title-icon"></i>
+                    漢語聲母拼音遊戲
+                </h1>
+                <p class="subtitle">聽音識字，學習標準普通話聲母發音</p>
+            </div>
+
+            <!-- 聲母選擇區 -->
+            <div class="initials-select-area" style="margin: 2rem 0 1rem 0; padding: 1rem; background: #fff; border-radius: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 1.2rem; align-items: flex-start; justify-content: flex-start;">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem;">
+                    <span style="font-weight:600; color:#7c3aed; margin-right:1rem;">選擇要練習的聲母：</span>
+                    <div id="initialsCheckboxes" style="display: flex; flex-wrap: wrap; gap: 1.2rem;"></div>
+                </div>
+                <label style="margin-top:0.5rem; font-weight:500; font-size:1rem; color:#374151; cursor:pointer;">
+                    <input type="checkbox" id="showWordCheckbox" checked style="margin-right:0.5rem;">顯示中文字
+                </label>
+            </div>
+
+            <!-- 遊戲區域 -->
+            <div class="game-area">
+                <!-- 分數和統計 -->
+                <div class="stats-area">
+                    <div class="score-display">
+                        分數: <span id="score" class="score-number">0</span>
+                    </div>
+                    <div class="accuracy-display">
+                        正確率: <span id="accuracy">0%</span> 
+                        (<span id="correct">0</span>/<span id="total">0</span>)
+                    </div>
+                    <div class="score-display">
+                        最高分: <span id="highScore" class="high-score">0</span>
+                    </div>
+                </div>
+
+                <!-- 揚聲器區域 -->
+                <div class="speaker-area">
+                    <button id="speakerBtn" class="speaker-btn">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                    <p class="speaker-instruction">點擊揚聲器播放漢字發音</p>
+                    <div id="currentSound" class="current-sound">
+                        播放的漢字: <span id="soundDisplay"></span>
+                    </div>
+                    <div class="control-buttons">
+                        <button id="nextBtn" class="control-btn next-btn" style="display: none;">
+                            <i class="fas fa-arrow-right"></i> 下一題
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 聲母按鈕網格 -->
+                <div class="buttons-grid" id="buttonsGrid">
+                    <!-- 聲母按鈕將由JavaScript動態生成 -->
+                </div>
+            </div>
+
+            <!-- 遊戲說明 -->
+            <div class="instructions">
+                <h3>遊戲說明</h3>
+                <ul>
+                    <li><i class="fas fa-play"></i> 點擊揚聲器播放漢字發音</li>
+                    <li><i class="fas fa-mouse-pointer"></i> 選擇對應的聲母按鈕</li>
+                    <li><i class="fas fa-redo"></i> 答題後可重播發音</li>
+                    <li><i class="fas fa-arrow-right"></i> 準備好後點擊下一題</li>
+                    <li><i class="fas fa-plus"></i> 答對得 10 分</li>
+                    <li><i class="fas fa-minus"></i> 答錯扣 5 分</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 反饋提示 -->
+    <div id="feedback" class="feedback"></div>
+
+    <script>
+        class PinyinGame {
+            constructor() {
+                // 標準普通話聲母
+                this.initials = ['b', 'p', 'm', 'f', 'd', 't', 'n', 'l', 'g', 'k', 'h', 'j', 'q', 'x', 'zh', 'ch', 'sh', 'r', 'z', 'c', 's', 'y', 'w'];
+                
+                // 聲母對應的漢字陣列
+                this.initialWords = {
+                    'b': ['白','八','爸','把','班','包','北','本','比','邊','筆','冰','表','變','病','百','半','辦','保','報','幫','棒','杯','背','鼻','必','兵','布','步','板','寶','壁','播','博','補','閉','賓','標','遍','餅','畢'],
+                    'p': ['拍','怕','跑','朋','皮','片','平','破','普','旁','配','票','品','篇','批','坡','盤','派','胖','碰','培','佩','評','飄','婆','葡','噗','譜','頻','拼','炮','泡','坡','噴','棚','牌','屏','坡','佩','盼'],
+                    'm': ['媽','馬','買','慢','忙','毛','沒','門','米','面','明','名','夢','美','妹','每','滿','麻','嗎','木','母','民','明','米','密','妙','夢','盟','模','摸','末','門','眉','妹','秒','苗','棉','敏','謎','蜜'],
+                    'f': ['發','飯','方','飛','分','風','服','父','放','房','非','費','粉','翻','法','反','夫','福','符','富','佛','封','扶','防','繁','粉','峰','逢','縫','芳','凡','返','罰','扶','伏','俯','腹','氛','蜂','芳'],
+                    'd': ['大','打','帶','單','當','到','的','地','點','東','多','動','得','等','電','弟','低','刀','道','燈','短','讀','冬','都','德','蛋','店','段','頂','燈','導','毒','隊','端','盾','蹲','洞','燉','盜','滴'],
+                    't': ['他','她','太','天','聽','同','頭','圖','推','退','體','條','特','談','堂','湯','糖','跳','田','土','通','痛','停','提','台','湯','唐','探','替','聽','堂','套','談','塔','湯','童','鐵','填','甜','腿','圖'],
+                    'n': ['那','男','南','難','內','年','女','你','牛','農','能','奶','拿','腦','鳥','念','泥','暖','怒','納','呢','嫩','鈉','奶','納','泥','腦','暖','能','牛','女','男','南','年','念','鳥','泥','納','奶','嫩'],
+                    'l': ['來','老','了','裡','力','兩','六','路','綠','論','樂','藍','冷','林','樓','臉','亮','連','禮','利','立','流','留','料','林','蘭','雷','累','冷','樓','臨','戀','良','烈','鈴','籃','蘆','蘭','龍','嶺','梨'],
+                    'g': ['高','告','個','給','工','公','共','狗','國','過','哥','歌','古','光','廣','感','改','港','剛','更','根','格','各','功','故','觀','管','廣','貢','谷','瓜','鼓','掛','規','鬼','貴','桂','冠','股','固','甘'],
+                    'k': ['開','看','可','口','快','塊','困','課','空','考','科','客','康','卡','哭','庫','刻','控','靠','礦','寬','狂','跨','款','礦','寇','坤','酷','寇','寇','寇','寇','寇','寇','寇','寇','寇','寇','寇'],
+                    'h': ['好','和','黑','很','後','話','會','回','還','紅','花','黃','湖','海','河','號','護','火','壞','換','歡','寒','汗','航','猴','虎','盒','合','厚','恨','耗','壺','婚','魂','護','晃','滑','懷','慧','惠'],
+                    'j': ['家','見','叫','進','九','就','覺','教','接','機','今','近','金','久','精','京','井','江','講','減','借','解','結','緊','靜','舊','居','舉','句','具','軍','局','聚','據','均','劇','驚','景','境','警'],
+                    'q': ['七','氣','前','錢','請','去','全','群','起','期','清','強','親','情','球','橋','巧','秋','區','取','趣','權','確','圈','輕','奇','企','器','汽','旗','勤','青','欠','切','千','巧','企','奇','請','情','秋'],
+                    'x': ['下','先','現','想','小','學','新','心','信','行','西','喜','細','夏','笑','寫','線','香','象','興','許','雪','修','休','選','型','習','戲','希','鮮','顯','協','謝','兄','熊','需','序','續','旋','宣','訊'],
+                    'zh': ['這','中','種','重','主','住','轉','追','準','桌','真','知','者','著','照','爭','指','止','志','紙','治','鐘','州','竹','助','專','裝','抓','裝','爪','珠','柱','祝','注','逐','諸','軸','鍾','忠','肢'],
+                    'ch': ['車','出','處','穿','春','從','錯','長','常','成','吃','查','場','唱','超','朝','潮','城','池','尺','充','除','初','處','川','傳','創','純','醜','臭','抽','仇','儲','處','除','齒','廚','蠢','椿','蟲'],
+                    'sh': ['上','少','生','時','事','是','手','書','說','誰','山','水','師','深','聲','實','世','十','石','市','收','首','熟','數','樹','順','輸','屬','鼠','傷','賞','蛇','設','攝','伸','盛','勝','詩','視','試','識'],
+                    'r': ['人','日','入','如','熱','讓','認','任','容','肉','然','染','燃','仍','軟','榮','融','忍','仁','若','弱','潤','染','繞','融','忍','儒','榮','瑞','睿','冉','茹','蓉','茸','儒','軟','熱','染','融','榮'],
+                    'z': ['在','再','早','怎','走','最','作','做','坐','字','中','正','主','資','總','族','足','租','阻','尊','左','增','則','責','造','雜','站','招','找','照','戰','章','張','志','止','指','直','知','治','重','竹'],
+                    'c': ['才','菜','參','草','層','從','錯','次','此','存','採','餐','策','測','藏','操','曹','槽','冊','差','猜','擦','彩','財','殘','慚','慚','慚','慚','慚','慚','慚','慚','慚','慚','慚','慚','慚','慚','慚'],
+                    's': ['三','色','山','上','少','生','時','事','是','手','水','師','聲','實','世','十','石','市','收','首','熟','數','樹','順','輸','屬','鼠','傷','賞','蛇','設','攝','伸','盛','勝','詩','視','試','識','蘇'],
+                    'y': ['一','也','要','有','又','用','月','以','因','應','眼','言','羊','陽','樣','業','夜','醫','易','音','銀','油','友','雨','魚','語','元','遠','願','院','運','雲','煙','沿','咽','燕','野','葉','益','疑','憶'],
+                    'w': ['我','為','問','無','五','外','完','晚','萬','王','望','網','微','溫','文','聞','舞','危','味','偉','維','委','威','胃','尾','偉','唯','未','位','衛','溫','武','物','午','屋','忘','旺','網','王','威','微']
+                };
+                
+                this.gameState = {
+                    score: 0,
+                    currentSound: null,
+                    currentWord: null,
+                    isPlaying: false,
+                    correctAnswers: 0,
+                    totalAnswers: 0,
+                    highScore: localStorage.getItem('pinyinGameHighScore') || 0,
+                    hasPlayed: false,
+                    hasAnswered: false
+                };
+
+                this.audioContext = null;
+                this.audioBuffers = new Map();
+                
+                this.init();
+            }
+
+            async init() {
+                this.setupUI();
+                this.setupEventListeners();
+                this.updateDisplay();
+                await this.initAudio();
+            }
+
+            setupUI() {
+                // 創建聲母按鈕
+                const buttonContainer = document.getElementById('buttonsGrid');
+                this.initials.forEach(initial => {
+                    const button = document.createElement('button');
+                    button.className = 'initial-btn';
+                    button.textContent = initial;
+                    button.setAttribute('data-initial', initial);
+                    buttonContainer.appendChild(button);
+                });
+
+                // 動態生成聲母checkbox
+                const checkboxContainer = document.getElementById('initialsCheckboxes');
+                checkboxContainer.innerHTML = '';
+                this.initials.forEach(initial => {
+                    const label = document.createElement('label');
+                    label.style.display = 'flex';
+                    label.style.alignItems = 'center';
+                    label.style.gap = '0.3rem';
+                    label.style.fontWeight = '500';
+                    label.style.fontSize = '1rem';
+                    label.style.cursor = 'pointer';
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = initial;
+                    checkbox.checked = true;
+                    checkbox.className = 'initial-checkbox';
+                    label.appendChild(checkbox);
+                    label.appendChild(document.createTextNode(initial));
+                    checkboxContainer.appendChild(label);
+                });
+
+                // 顯示最高分
+                document.getElementById('highScore').textContent = this.gameState.highScore;
+            }
+
+            getSelectedInitials() {
+                // 取得所有被勾選的聲母
+                return Array.from(document.querySelectorAll('.initial-checkbox:checked')).map(cb => cb.value);
+            }
+
+            setupEventListeners() {
+                // 揚聲器按鈕
+                document.getElementById('speakerBtn').addEventListener('click', () => {
+                    if (this.gameState.currentWord) {
+                        // 如果已經有漢字，則重播
+                        this.replaySound();
+                    } else {
+                        // 如果沒有漢字，則播放新題目
+                        this.playRandomSound();
+                    }
+                });
+
+                // 下一題按鈕
+                document.getElementById('nextBtn').addEventListener('click', () => {
+                    this.nextQuestion();
+                });
+
+                // 聲母按鈕
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('initial-btn')) {
+                        const selectedInitial = e.target.getAttribute('data-initial');
+                        this.checkAnswer(selectedInitial, e.target);
+                    }
+                });
+            }
+
+            async initAudio() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (error) {
+                    console.warn('Web Audio API 不支持，使用 HTML5 Audio');
+                }
+            }
+
+            async playRandomSound() {
+                if (this.gameState.isPlaying) return;
+
+                // 只從勾選的聲母中出題
+                const availableInitials = this.getSelectedInitials();
+                if (availableInitials.length === 0) {
+                    this.showFeedback('請至少選擇一個聲母', 'warning');
+                    return;
+                }
+
+                this.gameState.isPlaying = true;
+                this.gameState.currentSound = availableInitials[Math.floor(Math.random() * availableInitials.length)];
+                
+                // 從對應的漢字陣列中隨機選擇一個字
+                const words = this.initialWords[this.gameState.currentSound];
+                this.gameState.currentWord = words[Math.floor(Math.random() * words.length)];
+                
+                const speakerBtn = document.getElementById('speakerBtn');
+                speakerBtn.classList.add('playing');
+                
+                // 使用 Speech Synthesis API 播放漢字
+                this.speakWord(this.gameState.currentWord);
+                
+                // 根據checkbox決定是否顯示漢字
+                const showWord = document.getElementById('showWordCheckbox').checked;
+                if (showWord) {
+                    document.getElementById('soundDisplay').textContent = this.gameState.currentWord;
+                    document.getElementById('currentSound').classList.add('show');
+                } else {
+                    document.getElementById('soundDisplay').textContent = '';
+                    document.getElementById('currentSound').classList.remove('show');
+                }
+                
+                setTimeout(() => {
+                    speakerBtn.classList.remove('playing');
+                    this.gameState.isPlaying = false;
+                }, 1000);
+            }
+
+            speakWord(word) {
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(word);
+                    utterance.lang = 'zh-CN';
+                    utterance.rate = 0.8;
+                    utterance.pitch = 1.0;
+                    speechSynthesis.speak(utterance);
+                } else {
+                    console.warn('Speech Synthesis API 不支持');
+                    this.showFeedback('瀏覽器不支持語音播放', 'warning');
+                }
+            }
+
+            checkAnswer(selectedInitial, buttonElement) {
+                if (!this.gameState.currentSound) {
+                    this.showFeedback('請先點擊揚聲器播放漢字', 'warning');
+                    return;
+                }
+
+                this.gameState.totalAnswers++;
+                this.gameState.hasAnswered = true;
+                
+                if (selectedInitial === this.gameState.currentSound) {
+                    // 答對
+                    this.gameState.score += 10;
+                    this.gameState.correctAnswers++;
+                    buttonElement.classList.add('correct-animation');
+                    this.showFeedback('正確！+10分', 'success');
+                } else {
+                    // 答錯
+                    this.gameState.score -= 5;
+                    buttonElement.classList.add('wrong-animation');
+                    this.showFeedback(`錯誤！正確答案是 "${this.gameState.currentSound}" -5分`, 'error');
+                }
+
+                // 清除動畫效果
+                setTimeout(() => {
+                    buttonElement.classList.remove('correct-animation', 'wrong-animation');
+                }, 600);
+
+                // 更新最高分
+                if (this.gameState.score > this.gameState.highScore) {
+                    this.gameState.highScore = this.gameState.score;
+                    localStorage.setItem('pinyinGameHighScore', this.gameState.highScore);
+                }
+
+                this.updateDisplay();
+                this.showNextButton();
+            }
+
+            replaySound() {
+                if (this.gameState.currentWord) {
+                    this.speakWord(this.gameState.currentWord);
+                }
+            }
+
+            nextQuestion() {
+                this.resetCurrentSound();
+                this.hideControlButtons();
+                this.playRandomSound();
+            }
+
+            showControlButtons() {
+                document.getElementById('replayBtn').style.display = 'inline-flex';
+                document.getElementById('nextBtn').style.display = 'inline-flex';
+            }
+
+            hideControlButtons() {
+                document.getElementById('nextBtn').style.display = 'none';
+            }
+
+            resetCurrentSound() {
+                this.gameState.currentSound = null;
+                this.gameState.currentWord = null;
+                this.gameState.hasPlayed = false;
+                this.gameState.hasAnswered = false;
+                document.getElementById('currentSound').classList.remove('show');
+            }
+
+            updateDisplay() {
+                document.getElementById('score').textContent = this.gameState.score;
+                document.getElementById('correct').textContent = this.gameState.correctAnswers;
+                document.getElementById('total').textContent = this.gameState.totalAnswers;
+                document.getElementById('highScore').textContent = this.gameState.highScore;
+                
+                const accuracy = this.gameState.totalAnswers > 0 
+                    ? Math.round((this.gameState.correctAnswers / this.gameState.totalAnswers) * 100)
+                    : 0;
+                document.getElementById('accuracy').textContent = accuracy + '%';
+            }
+
+            showFeedback(message, type) {
+                const feedback = document.getElementById('feedback');
+                feedback.textContent = message;
+                feedback.className = `feedback ${type}`;
+                feedback.classList.add('show');
+                
+                setTimeout(() => {
+                    feedback.classList.remove('show');
+                }, 3000);
+            }
+
+            showNextButton() {
+                document.getElementById('nextBtn').style.display = 'inline-flex';
+            }
+        }
+
+        // 初始化遊戲
+        document.addEventListener('DOMContentLoaded', () => {
+            new PinyinGame();
+        });
+    </script>
+</body>
+</html> 
